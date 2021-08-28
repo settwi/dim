@@ -16,13 +16,14 @@
 
 // this one works for me
 extern void CoreDisplay_Display_SetUserBrightness(CGDirectDisplayID id, double brightness) __attribute__((weak_import));
-// use this one for Apple Silicon processors (see line 37)
+// use this one for Apple Silicon processors (see line 39)
 extern int DisplayServicesSetBrightness(CGDirectDisplayID id, float brightness) __attribute__((weak_import));
 
 void setAllBrightness(double);
 void displayChangedCallback(CGDirectDisplayID, CGDisplayChangeSummaryFlags, void*);
 
 const int maxDisp = 16;
+const unsigned DIM_TIME = 15;
 
 // code adapted from https://github.com/nriley/brightness/blob/master/brightness.c
 void setAllBrightness(double bright) {
@@ -49,7 +50,7 @@ int main(int argc, char* argv[]) {
 	@autoreleasepool {
 		// set up timer to check if monitor still connected intermittently
 		CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(
-				kCFAllocatorDefault, 0, 30, 0, 0, ^(CFRunLoopTimerRef ref) {
+				kCFAllocatorDefault, 0, DIM_TIME, 0, 0, ^(CFRunLoopTimerRef ref) {
 					setAllBrightness(0.0);	
 				});
 
