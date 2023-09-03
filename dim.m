@@ -13,6 +13,7 @@
 #include <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
 #include <IOKit/graphics/IOGraphicsLib.h>
+#include <stdio.h>
 
 // this one works for me
 extern void CoreDisplay_Display_SetUserBrightness(CGDirectDisplayID id, double brightness) __attribute__((weak_import));
@@ -27,6 +28,7 @@ const unsigned DIM_TIME = 15;
 
 // code adapted from https://github.com/nriley/brightness/blob/master/brightness.c
 void setAllBrightness(double bright) {
+	NSLog(@"called set brightness");
 	CGDirectDisplayID dispAry[maxDisp];
 	CGDisplayCount numDisplays;
 	CGDisplayErr e = CGGetOnlineDisplayList(maxDisp, dispAry, &numDisplays);
@@ -41,27 +43,19 @@ void setAllBrightness(double bright) {
 
 void displayChangedCallback(CGDirectDisplayID display, CGDisplayChangeSummaryFlags flags, void *userInfo) {
 	if (flags & kCGDisplayAddFlag) {
-		NSLog(@"Display connected");
+		NSLog(@"called display changed callback");
 		setAllBrightness(0.0);
 	}
 }
 
 int main(int argc, char* argv[]) {
 	@autoreleasepool {
-		// set up timer to check if monitor still connected intermittently
-		CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(
-				kCFAllocatorDefault, 0, DIM_TIME, 0, 0, ^(CFRunLoopTimerRef ref) {
-					setAllBrightness(0.0);	
-				});
-
 		CGError e = CGDisplayRegisterReconfigurationCallback(&displayChangedCallback, NULL);
 		// die if not successful
 		assert(e == 0);
 
+		// setAllBrightness(0.0);
 		NSApplicationLoad();
-		CFRunLoopRef rl = CFRunLoopGetMain();
-		CFRunLoopAddTimer(rl, timer, kCFRunLoopCommonModes);
-		NSLog(@"Running");
 		CFRunLoopRun();
 	}
 	return 0;
